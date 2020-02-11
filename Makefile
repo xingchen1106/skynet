@@ -52,7 +52,7 @@ update3rd :
 
 CSERVICE = snlua logger gate harbor
 LUA_CLIB = skynet \
-  client \
+  client protobuf \
   bson md5 sproto lpeg $(TLS_MODULE)
 
 LUA_CLIB_SKYNET = \
@@ -110,6 +110,11 @@ $(LUA_CLIB_PATH)/md5.so : 3rd/lua-md5/md5.c 3rd/lua-md5/md5lib.c 3rd/lua-md5/com
 $(LUA_CLIB_PATH)/client.so : lualib-src/lua-clientsocket.c lualib-src/lua-crypt.c lualib-src/lsha1.c | $(LUA_CLIB_PATH)
 	$(CC) $(CFLAGS) $(SHARED) $^ -o $@ -lpthread
 
+$(LUA_CLIB_PATH)/protobuf.so : ../pbc/binding/lua53/pbc-lua53.c  | $(LUA_CLIB_PATH)
+	$(CC) $(CFLAGS) $(SHARED) -Iskynet-src -I../pbc ../pbc/build/libpbc.a $^ -o $@
+	cp -f ../pbc/binding/lua53/protobuf.so luaclib/
+	cp -f ../pbc/binding/lua53/protobuf.lua lualib/
+
 $(LUA_CLIB_PATH)/sproto.so : lualib-src/sproto/sproto.c lualib-src/sproto/lsproto.c | $(LUA_CLIB_PATH)
 	$(CC) $(CFLAGS) $(SHARED) -Ilualib-src/sproto $^ -o $@ 
 
@@ -120,7 +125,7 @@ $(LUA_CLIB_PATH)/lpeg.so : 3rd/lpeg/lpcap.c 3rd/lpeg/lpcode.c 3rd/lpeg/lpprint.c
 	$(CC) $(CFLAGS) $(SHARED) -I3rd/lpeg $^ -o $@ 
 
 clean :
-	rm -f $(SKYNET_BUILD_PATH)/skynet $(CSERVICE_PATH)/*.so $(LUA_CLIB_PATH)/*.so
+	rm -f $(SKYNET_BUILD_PATH)/skynet $(CSERVICE_PATH)/*.so $(LUA_CLIB_PATH)/*.so lualib/protobuf.lua
 
 cleanall: clean
 ifneq (,$(wildcard 3rd/jemalloc/Makefile))
